@@ -1,0 +1,21 @@
+apiVersion: 1.0.0
+metadata:
+  name: accelerator-operator-helm-handsonzotx
+projects:
+  - name: accelerator-operator-helm-handson
+    source:
+      location: 'https://github.com/k-srkw/accelerator-operator-helm-handson.git'
+      type: github
+components:
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+  - command:
+      - tail
+    args:
+      - '-f'
+      - /dev/null
+    memoryLimit: 1536M
+    type: dockerimage
+    alias: cli
+    image: 'registry.redhat.io/web-terminal-tech-preview/web-terminal-tooling-rhel8:1.4-3'
+    mountSources: true
