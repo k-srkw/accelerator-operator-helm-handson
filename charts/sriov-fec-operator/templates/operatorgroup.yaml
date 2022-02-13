@@ -1,8 +1,17 @@
+{{- if .Values.operatorGroup.create -}}
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: vran-operators
-  namespace: vran-acceleration-operators
+  name: {{ include "sriov-fec-operator.fullname" . }}
+  labels:
+    {{- include "sriov-fec-operator.labels" . | nindent 4 }}
 spec:
+  {{- $relns := .Release.Namespace -}}
+  {{- with .Values.operatorGroup }}
+  {{- if .serviceAccountName -}}
+  serviceAccountName: {{ .serviceAccountName | quote }}
+  {{- end }}
   targetNamespaces:
-    - vran-acceleration-operators
+    - {{ .targetNamespaces | default $relns | quote  }}
+  {{- end }}
+{{- end }}

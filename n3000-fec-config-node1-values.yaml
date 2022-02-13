@@ -1,21 +1,11 @@
-# Default values for n3000-fec-config.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-nameOverride: ""
-fullnameOverride: ""
-
 priority: 1
-nodeSelector: {}
+nodeSelector:
+  kubernetes.io/hostname: node1
 acceleratorSelector:
-  pciAddress: ""
-  deviceID: ""
-  driver: ""
-  maxVirtualFunctions: nil
-  vendorID: ""
+  pciAddress: 0000:14:00.1
 physicalFunction:  
-  pfDriver: ""
-  vfDriver: ""
+  pfDriver: pci-pf-stub
+  vfDriver: vfio-pci
   vfAmount: 2
   bbDevConfigN3000:
     # Network Type: either "FPGA_5GNR" or "FPGA_LTE"

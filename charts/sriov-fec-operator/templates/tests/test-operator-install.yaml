@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "sriov-fec-operator.fullname" . }}-install-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    {{- include "sriov-fec-operator.labels" . | nindent 4 }}
+spec:
+  containers:
+  - name: {{ include "sriov-fec-operator.fullname" . }}-install-test
+    image: registry.redhat.io/openshift4/ose-cli:v4.9.0-202201261125.p0.g3f16530.assembly.stream
+    command:
+    - /bin/bash
+    - -c
+    - '[ $(oc get csv $(oc get subscription {{ include "sriov-fec-operator.fullname" . }} -o jsonpath="{.status.currentCSV}") -o jsonpath={.status.phase}) = Succeeded ]'
+  restartPolicy: Never
+  serviceAccountName: {{ include "sriov-fec-operator.fullname" . }}-install-test
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "sriov-fec-operator.fullname" . }}-install-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    {{- include "sriov-fec-operator.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "sriov-fec-operator.fullname" . }}-install-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    {{- include "sriov-fec-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: {{ include "sriov-fec-operator.fullname" . }}-install-test
+  namespace: vran-acceleration-operators

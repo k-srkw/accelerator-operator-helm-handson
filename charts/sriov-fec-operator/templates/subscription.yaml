@@ -1,10 +1,14 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: sriov-fec-subscription
-  namespace: vran-acceleration-operators
+  name: {{ include "sriov-fec-operator.fullname" . }}
+  labels:
+    {{- include "sriov-fec-operator.labels" . | nindent 4 }}
 spec:
-  channel: stable
+  {{- with .Values.subscription }}
+  channel: {{ .channel | quote  }}
   name: sriov-fec
-  source: certified-operators
-  sourceNamespace: openshift-marketplace
+  source: {{ .source | quote  }}
+  sourceNamespace: {{ .sourceNamespace | quote  }}
+  installPlanApproval: {{ .installPlanApproval | quote  }}
+  {{- end }}

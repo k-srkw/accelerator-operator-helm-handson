@@ -1,46 +1,72 @@
 apiVersion: sriovfec.intel.com/v2
 kind: SriovFecClusterConfig
 metadata:
-  name: config
-  namespace: vran-acceleration-operators
+  name: {{ include "n3000-fec-config.fullname" . }}
+  labels:
+    {{- include "n3000-fec-config.labels" . | nindent 4 }}
 spec:
-  priority: 1
+  priority: {{ .Values.priority }}
+  {{- with .Values.nodeSelector }}
   nodeSelector:
-    kubernetes.io/hostname: node1
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   acceleratorSelector:
-    pciAddress: 0000:14:00.1
+    {{- with .Values.acceleratorSelector }}
+    pciAddress: {{ .pciAddress }}
+    {{- if .deviceID -}}
+    deviceIDs: {{ .deviceID }}
+    {{- end }}
+    {{- if .driver -}}
+    driver: {{ .driver }}
+    {{- end }}
+    {{- if .vendorID -}}
+    vendorID: {{ .vendorID }}
+    {{- end }}
+    {{- end }}
   physicalFunction:  
-    pfDriver: pci-pf-stub
-    vfDriver: vfio-pci
-    vfAmount: 2
+    {{- with .Values.physicalFunction }}
+    pfDriver: {{ .pfDriver }}
+    vfDriver: {{ .vfDriver }}
+    vfAmount: {{ .vfAmount }}
+    {{- end }}
     bbDevConfig:
       n3000:
+        {{- with .Values.physicalFunction.bbDevConfigN3000 }}
         # Network Type: either "FPGA_5GNR" or "FPGA_LTE"
-        networkType: "FPGA_5GNR"
+        networkType: {{ .networkType | quote }}
         # Programming mode: 0 = VF Programming, 1 = PF Programming
-        pfMode: false
-        flrTimeout: 610
+        pfMode: {{ .pfMode }}
+        flrTimeout: {{ .flrTimeout }}
+        {{- with .downlink }}
         downlink:
-          bandwidth: 3
-          loadBalance: 128
+          bandwidth: {{ .bandwidth }}
+          loadBalance:  {{ .loadBalance }}
+          {{- with .queues }}
           queues:
-            vf0: 16
-            vf1: 16
-            vf2: 0
-            vf3: 0
-            vf4: 0
-            vf5: 0
-            vf6: 0
-            vf7: 0
+            vf0: {{ .vf0 }}
+            vf1: {{ .vf1 }}
+            vf2: {{ .vf2 }}
+            vf3: {{ .vf3 }}
+            vf4: {{ .vf4 }}
+            vf5: {{ .vf5 }}
+            vf6: {{ .vf6 }}
+            vf7: {{ .vf7 }}
+          {{- end }}
+        {{- end }}
+        {{- with .uplink }}
         uplink:
-          bandwidth: 3
-          loadBalance: 128
+          bandwidth: {{ .bandwidth }}
+          loadBalance: {{ .loadBalance }}
+          {{- with .queues }}
           queues:
-            vf0: 16
-            vf1: 16
-            vf2: 0
-            vf3: 0
-            vf4: 0
-            vf5: 0
-            vf6: 0
-            vf7: 0
+            vf0: {{ .vf0 }}
+            vf1: {{ .vf1 }}
+            vf2: {{ .vf2 }}
+            vf3: {{ .vf3 }}
+            vf4: {{ .vf4 }}
+            vf5: {{ .vf5 }}
+            vf6: {{ .vf6 }}
+            vf7: {{ .vf7 }}
+          {{- end }}
+        {{- end }}
+        {{- end }}

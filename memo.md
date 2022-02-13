@@ -29,7 +29,9 @@ spec:
   sourceNamespace: openshift-marketplace
 EOF
 
-$ helm install vran-acceleration-operator ./my-sample-chart 
+$ helm lint ./charts/*
+
+$ helm install vran-acceleration-operator ./charts/sriov-fec-operator
 
 Device Plugin は Accelerator をリソースとするのではなく VF をリソースとする
 https://www.fujitsu.com/jp/documents/products/computing/servers/unix/sparc/technical/document/sr-iov_guide.pdf
@@ -48,11 +50,28 @@ helm uninstall 時以下の課題がある
   https://github.com/helm/helm/blob/484d43913f97292648c867b56768775a55e4bba6/pkg/releaseutil/kind_sorter.go
   https://github.com/helm/helm/issues/4578
 
+helm template --debug vran-acceleration-operator ./charts/sriov-fec-operator
+helm install --dry-run --debug vran-acceleration-operator ./charts/sriov-fec-operator
+
+### Hook
+
+以下の順番で削除する必要がある
 
 CSV=$(oc get subscription sriov-fec-subscription -o jsonpath='{.status.currentCSV}')
-oc delete subscription sriov-fec-subscription
-oc delete operatorgroup (helm uninstall vran-acceleration-operator)
+helm uninstall vran-acceleration-operator
+  oc delete subscription sriov-fec-subscription
+  oc delete operatorgroup
 oc delete csv $CSV
+
+### テスト
+
+oc run operator-test --image registry.redhat.io/openshift4/ose-cli:v4.9.0-202201261125.p0.g3f16530.assembly.stream --restart Never --serviceaccount operator-test --command -- /bin/bash -c '[ $(oc get csv sriov-fec.v2.1.0 -o jsonpath='{.status.phase}') = 'Succeeded' ]'
+
+oc run operator-test --dry-run=client -oyaml --image registry.redhat.io/openshift4/ose-cli:v4.9.0-202201261125.p0.g3f16530.assembly.stream --restart Never --serviceaccount operator-test --command -- /bin/bash -c '[ $(oc get csv sriov-fec.v2.1.0 -o jsonpath='{.status.phase}') = 'Succeeded' ]'
+
+oc create serviceaccount operator-test
+oc adm policy add-role-to-user view -z operator-test
+oc run operator-test --image registry.redhat.io/openshift4/ose-cli:v4.9.0-202201261125.p0.g3f16530.assembly.stream --restart Never --rm -it --serviceaccount operator-test
 
 
 $ cat <<EOF > sriovfecclusterconfig.yaml
