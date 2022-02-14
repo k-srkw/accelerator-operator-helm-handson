@@ -46,4 +46,4 @@ Custom Resource 作成用 Helm Chart と Operator インストール用 Helm Cha
 
 Operator インストール用 Helm Chart では helm uninstall 時に自身が管理する Subscription および OperatorGroup リソースを削除しますが、 Operator のアンインストールには [ClusterServiceVersion の削除](https://docs.openshift.com/container-platform/4.9/operators/admin/olm-deleting-operators-from-cluster.html#olm-deleting-operators-from-a-cluster)が必要となります。
 
-これに対応するため [Chart Hook](https://helm.sh/docs/topics/charts_hooks/) 機能を利用して CSV を削除しています。
+これに対応するため [Chart Hook](https://helm.sh/docs/topics/charts_hooks/) 機能を利用して CSV を削除しています (charts/sriov-fec-operator/templates/pre-delete-job.yaml)。
